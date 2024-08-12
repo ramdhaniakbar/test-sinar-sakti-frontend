@@ -84,10 +84,10 @@ export default function Sidebar() {
         <Link href={"/employees"}>
           <div
             className={`flex flex-row items-center py-5 px-6 w-full justify-between ${
-              router == "/employees" ? "bg-[#3F4049]" : "hover:bg-[#3F4049]"
+              router.startsWith('/employees') ? "bg-[#3F4049]" : "hover:bg-[#3F4049]"
             }`}
             style={
-              router == "/employees"
+              router.startsWith('/employees')
                 ? { borderLeft: "solid #DDE2FF 3px" }
                 : { borderLeft: "none" }
             }
@@ -95,11 +95,11 @@ export default function Sidebar() {
             <div className="flex flex-row space-x-4 items-center">
               <Book
                 size={20}
-                color={router == "/employees" ? "#DDE2FF" : "#9FA2B4"}
+                color={router.startsWith('/employees') ? "#DDE2FF" : "#9FA2B4"}
               />
               <span
                 className={`font-light text-base flex ${
-                  router == "/employees"
+                  router.startsWith('/employees')
                     ? "text-[#DDE2FF]"
                     : "text-[#9FA2B4] hover:text-[#DDE2FF]"
                 }`}

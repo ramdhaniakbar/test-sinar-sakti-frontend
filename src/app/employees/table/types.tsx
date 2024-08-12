@@ -4,12 +4,12 @@ import {
  } from 'react-table';
 
 export type Employee = {
-   id: number;
+   id?: number;
    nama: string;
    nomor: string;
    jabatan: string;
    departemen: string;
-   tanggal_masuk: Date;
+   tanggal_masuk?: Date;
    foto: string;
    status: string;
 }

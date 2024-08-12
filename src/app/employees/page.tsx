@@ -9,6 +9,7 @@ import axios from "axios"
 import { dataTableInformation } from "@/helpers/generalHelper"
 import EmployeeTableInstance from "./table/column"
 import Image from "next/image"
+import Link from "next/link"
 
 export default function Employees() {
   const [employeeData, setEmployeeData] = useState<Employee[]>([])
@@ -87,7 +88,9 @@ export default function Employees() {
 
           <div className="flex flex-col gap-2 md:flex-row justify-between mt-12">
             <div className="flex gap-4">
-              <Button>Tambah Karyawan</Button>
+              <Link href={'/employees/create'}>
+                <Button>Tambah Karyawan</Button>
+              </Link>
               <Button>Import CSV</Button>
             </div>
             <div className="flex gap-4">
