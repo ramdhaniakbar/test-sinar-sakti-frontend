@@ -22,6 +22,23 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import toast from "react-hot-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function Employees() {
   const [page, setPage] = useState(1)
@@ -32,6 +49,11 @@ export default function Employees() {
     to: 0,
   })
   const [csvFile, setCsvFile] = useState<any>(null)
+  const [departemenValue, setDepartemenValue] = useState<string>("")
+  const [statusValue, setStatusValue] = useState<string>("")
+  // filter modal
+  const [isOpenModalFilter, setIsOpenModalFilter] = useState(false)
+  const [resetRequested, setResetRequested] = useState(false)
 
   const {
     isPending,
@@ -46,12 +68,22 @@ export default function Employees() {
     queryFn: async () => {
       let queryParam = `?limit=${limit}&page=${page}`
 
+      // sorting
       if (sorting.length > 0) {
         const sortColumns = sorting.map((sort) => sort.columnId)
         const sortDirections = sorting.map((sort) => sort.direction)
 
         queryParam += `&sort_columns=${sortColumns.join(",")}`
         queryParam += `&sort_directions=${sortDirections.join(",")}`
+      }
+
+      // filter by
+      if (departemenValue) {
+        queryParam += '&departemen=' + departemenValue
+      }
+
+      if (statusValue) {
+        queryParam += '&status=' + statusValue
       }
 
       const employeesResponse = await axios.get(
@@ -99,39 +131,16 @@ export default function Employees() {
     },
   })
 
-  const { mutate: exportFile } = useMutation({
-    mutationFn: async (data: any) => {
-      const fileResponse = await axios.post(
-        "localhost:8000/api/v1/employee/export-file",
-        { type: data },
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      )
-      return fileResponse
-    },
-    onSuccess: () => {
-      toast("Berhasil mengimport file CSV")
-      refetch()
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Error an occured")
-      console.log(error.response.data.message)
-    },
-  })
-
   const exportFileDownload = async (data: string) => {
     let type = ""
-    let response_type: any = ''
+    let response_type: any = ""
 
     if (data == "pdf") {
       type = "application/pdf"
-      response_type = 'arraybuffer'
+      response_type = "arraybuffer"
     } else {
       type = "text/csv"
-      response_type = 'blob'
+      response_type = "blob"
     }
 
     const res = await axios.get(
@@ -140,7 +149,7 @@ export default function Employees() {
         headers: {
           "Content-Type": "application/json",
         },
-        responseType: response_type
+        responseType: response_type,
       }
     )
     const blob = new Blob([res.data], { type: type })
@@ -199,7 +208,16 @@ export default function Employees() {
     }
   }, [employeeResponse?.data?.data?.pagination, limit, page, sorting])
 
+  useEffect(() => {
+    if (resetRequested) {
+      refetch()
+      setResetRequested(false)
+    }
+  }, [refetch, resetRequested])
+
   const employeesData = employeeResponse?.data?.data?.rows || []
+
+  console.log("statusValue", statusValue)
 
   return (
     <div className="h-full w-full">
@@ -222,10 +240,74 @@ export default function Employees() {
                 <span>Sort</span>
               </div>
 
-              <div className="flex items-end gap-1">
-                <Filter color="#C6C7CD" />
-                <span>Filter</span>
-              </div>
+              <Dialog
+                open={isOpenModalFilter}
+                onOpenChange={setIsOpenModalFilter}
+              >
+                <DialogTrigger asChild>
+                  <div
+                    className="flex items-end gap-1 cursor-pointer"
+                    onClick={() => setIsOpenModalFilter(!isOpenModalFilter)}
+                  >
+                    <Filter color="#C6C7CD" />
+                    <span>Filter</span>
+                  </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="mb-2">Filter Data</DialogTitle>
+                    <div className="flex gap-4">
+                      <Select value={departemenValue} onValueChange={(value) => setDepartemenValue(value)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Departemen" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Finance">Finance</SelectItem>
+                          <SelectItem value="HR">HR</SelectItem>
+                          <SelectItem value="Customer Service">
+                            Customer Service
+                          </SelectItem>
+                          <SelectItem value="Tech">Tech</SelectItem>
+                          <SelectItem value="Marketing">Marketing</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={statusValue} onValueChange={(value) => setStatusValue(value)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent defaultValue={statusValue}>
+                          <SelectItem value="kontrak">Kontrak</SelectItem>
+                          <SelectItem value="tetap">Tetap</SelectItem>
+                          <SelectItem value="probation">Probation</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </DialogHeader>
+                  <DialogFooter>
+                  <Button
+                      type="submit"
+                      variant={'destructive'}
+                      onClick={() => {
+                        setIsOpenModalFilter(!isOpenModalFilter)
+                        setDepartemenValue('')
+                        setStatusValue('')
+                        setResetRequested(true)
+                      }}
+                    >
+                      Reset perubahan
+                    </Button>
+                    <Button
+                      type="submit"
+                      onClick={() => {
+                        setIsOpenModalFilter(!isOpenModalFilter)
+                        refetch()
+                      }}
+                    >
+                      Simpan perubahan
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
