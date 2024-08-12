@@ -3,6 +3,7 @@ import { Employee } from "./types"
 export const employees = async (): Promise<Employee[]> => {
   return [
     {
+      id: 1,
       nama: "Muhamad Ramdhani Akbar",
       nomor: "12007942",
       jabatan: "Staff",
@@ -12,6 +13,7 @@ export const employees = async (): Promise<Employee[]> => {
       status: "tetap",
     },
     {
+      id: 2,
       nama: "Muhamad Ramdhani Akbar",
       nomor: "12007942",
       jabatan: "Staff",
@@ -21,6 +23,7 @@ export const employees = async (): Promise<Employee[]> => {
       status: "kontrak",
     },
     {
+      id: 3,
       nama: "Muhamad Ramdhani Akbar",
       nomor: "12007942",
       jabatan: "Staff",

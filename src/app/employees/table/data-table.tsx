@@ -1,75 +1,67 @@
 "use client"
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
+import { Employee, EmployeeTableLayoutProps } from "./types"
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  theme?: string
-  className?: string
-}
-
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
-  const table = useReactTable({
-    columns,
-    data,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  })
-
+export const EmployeeTableLayout = ({
+  getTableProps,
+  getTableBodyProps,
+  headerGroups,
+  rows,
+  prepareRow,
+}: EmployeeTableLayoutProps<Employee>) => {
   return (
-    <div className={`rounded-md`}>
-      <Table className={`bg-white`}>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-b">
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
+    <div className="rounded-md">
+      <table className="w-full bg-white" {...getTableProps()}>
+        <thead>
+          {headerGroups.map((headerGroup, i) => (
+            <tr
+              {...headerGroup.getHeaderGroupProps()}
+              key={i}
+              className="text-[#9FA2B4] border-b"
+            >
+              {headerGroup.headers.map((column) => (
+                <th
                   className="px-4 py-2 text-left text-sm font-medium"
+                  key={column.id} // Add unique key here
                 >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </TableHead>
+                  <div className="d-flex align-items-center">
+                    {column.render("Header")}
+                  </div>
+                </th>
               ))}
-            </TableRow>
+            </tr>
           ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => {
-            return (
-              <TableRow key={row.id} className="border-b">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-4 py-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.length > 0 ? (
+            rows.map((row) => {
+              prepareRow(row)
+              return (
+                <tr {...row.getRowProps()} key={row.id} className="border-b">
+                  {row.cells.map((cell) => (
+                    <td
+                      className="px-4 py-2"
+                      {...cell.getCellProps()}
+                      key={cell.column.id}
+                    >
+                      {cell.render("Cell")}
+                    </td>
+                  ))}
+                </tr>
+              )
+            })
+          ) : (
+            <tr>
+              <td
+                colSpan={headerGroups[0].headers.length}
+                className="text-center py-4"
+              >
+                No results found.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   )
 }

@@ -2,20 +2,19 @@
 
 import { Button } from "@/components/ui/button"
 import { ArrowUpWideNarrow, Filter } from "lucide-react"
-import { DataTable } from "./table/data-table"
-import { columns } from "./table/column"
-import { employees } from "./table/data"
 import { useEffect, useState } from "react"
 import { Employee, SortEmployee } from "./table/types"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { dataTableInformation } from "@/helpers/generalHelper"
+import EmployeeTableInstance from "./table/column"
+import Image from "next/image"
 
 export default function Employees() {
   const [employeeData, setEmployeeData] = useState<Employee[]>([])
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const [sorting, setSorting] = useState([])
+  const [sorting, setSorting] = useState<SortEmployee[]>([])
   const [dataInformation, setDataInformation] = useState({
     from: 0,
     to: 0,
@@ -28,44 +27,32 @@ export default function Employees() {
     error,
     isFetching,
     refetch,
-    isPlaceholderData,
   } = useQuery({
     queryKey: ["employees", page],
     queryFn: async () => {
       let queryParam = `?limit=${limit}&page=${page}`
 
-      //--- sort by
       if (sorting.length > 0) {
-        let sortColumns: string[] = []
-        let sortDirections: string[] = []
+        const sortColumns = sorting.map((sort) => sort.columnId)
+        const sortDirections = sorting.map((sort) => sort.direction)
 
-        sorting.forEach((sort: SortEmployee) => {
-          sortColumns.push(sort.columnId)
-          sortDirections.push(sort.direction)
-        })
-
-        queryParam += "&sort_columns=" + sortColumns.join(",")
-        queryParam += "&sort_directions=" + sortDirections.join(",")
+        queryParam += `&sort_columns=${sortColumns.join(",")}`
+        queryParam += `&sort_directions=${sortDirections.join(",")}`
       }
 
       const employeesResponse = await axios.get(
-        "http://localhost:8000/api/v1/employees" + queryParam
+        `http://localhost:8000/api/v1/employees${queryParam}`
       )
       return employeesResponse
     },
-    placeholderData: keepPreviousData,
   })
 
-  console.log("data ", employeeResponse?.data)
-
   useEffect(() => {
-    refetch()
-
-    if (employeeResponse?.data.data?.pagination) {
+    if (employeeResponse?.data?.data?.pagination) {
       const displayData = dataTableInformation(
         page,
         limit,
-        employeeResponse?.data.data?.pagination
+        employeeResponse?.data?.data?.pagination
       )
       setDataInformation({
         from: displayData.from,
@@ -74,9 +61,9 @@ export default function Employees() {
     } else {
       setDataInformation({ from: 0, to: 0 })
     }
-  }, [employeeResponse?.data.data?.pagination, limit, page, refetch, sorting])
+  }, [employeeResponse?.data?.data?.pagination, limit, page, sorting])
 
-  const employeesData = employeeResponse?.data?.data?.rows
+  const employeesData = employeeResponse?.data?.data?.rows || []
 
   return (
     <div className="h-full w-full">
@@ -109,8 +96,38 @@ export default function Employees() {
             </div>
           </div>
 
-          <div className="mt-12">
-            <DataTable columns={columns} data={employeesData} />
+          <div className="my-12">
+            <EmployeeTableInstance tableData={employeesData} />
+          </div>
+
+          <div className="flex justify-end gap-8">
+            <div className="flex">
+              <span>Rows per page</span>
+              <select name="" id="">
+                <option value="1">1</option>
+              </select>
+            </div>
+
+            <div className="flex gap-4">
+              <span>
+                {dataInformation.from} - {dataInformation.to} of{" "}
+                {employeeResponse?.data?.data?.pagination?.count_data}
+              </span>
+              <div className="flex gap-2">
+                <Image
+                  src={`/svgs/arrow_left.svg`}
+                  alt="arrow left"
+                  width={20}
+                  height={20}
+                />
+                <Image
+                  src={`/svgs/arrow_right.svg`}
+                  alt="arrow right"
+                  width={20}
+                  height={20}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

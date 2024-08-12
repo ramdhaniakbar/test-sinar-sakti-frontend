@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
 export default function Sidebar() {
-  const [openSidebar, setOpenSidar] = useState(false)
+  const [openSidebar, setOpenSidar] = useState(true)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const router = usePathname()
 
