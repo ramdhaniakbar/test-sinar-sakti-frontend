@@ -7,15 +7,26 @@ import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 
 export default function Sidebar() {
-  const [openSidebar, setOpenSidar] = useState(true)
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const router = usePathname()
+  const [openSidebar, setOpenSidebar] = useState(true);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const router = usePathname();
 
   useEffect(() => {
-    window.addEventListener("resize", () =>
-      window.innerWidth < 1024 ? setOpenSidar(false) : setOpenSidar(true)
-    )
-  }, [])
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setOpenSidebar(false);
+      } else {
+        setOpenSidebar(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Ensure the sidebar state is correct on initial load
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -25,20 +36,21 @@ export default function Sidebar() {
         window.innerWidth < 1024 && // Check screen width is below "xl"
         openSidebar
       ) {
-        setOpenSidar(false) // Close the sidebar if click is outside of it
+        setOpenSidebar(false); // Close the sidebar if click is outside of it
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleOutsideClick)
+    document.addEventListener("mousedown", handleOutsideClick);
 
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick)
-    }
-  }, [openSidebar])
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [openSidebar]);
 
   return (
     <div
-      className={`w-72 xl:block duration-175 linear !z-50 absolute h-full overflow-auto transition-all bg-[#363740] lg:!z-50 xl:!z-50 2xl:!z-0 ${
+      ref={sidebarRef}
+      className={`fixed top-0 left-0 w-72 xl:block duration-175 linear !z-50 h-screen overflow-auto transition-all bg-[#363740] ${
         openSidebar ? "translate-x-0" : "-translate-x-96"
       }`}
     >
@@ -56,10 +68,10 @@ export default function Sidebar() {
         <Link href={"/"}>
           <div
             className={`flex flex-row items-center py-5 px-6 w-full justify-between ${
-              router == "/" ? "bg-[#3F4049]" : "hover:bg-[#3F4049]"
+              router === "/" ? "bg-[#3F4049]" : "hover:bg-[#3F4049]"
             }`}
             style={
-              router == "/"
+              router === "/"
                 ? { borderLeft: "solid #DDE2FF 3px" }
                 : { borderLeft: "none" }
             }
@@ -67,11 +79,11 @@ export default function Sidebar() {
             <div className="flex flex-row space-x-4 items-center">
               <ChartPie
                 size={20}
-                color={router == "/" ? "#DDE2FF" : "#9FA2B4"}
+                color={router === "/" ? "#DDE2FF" : "#9FA2B4"}
               />
               <span
                 className={`font-light text-base flex ${
-                  router == "/"
+                  router === "/"
                     ? "text-[#DDE2FF]"
                     : "text-[#9FA2B4] hover:text-[#DDE2FF]"
                 }`}
@@ -111,5 +123,5 @@ export default function Sidebar() {
         </Link>
       </div>
     </div>
-  )
+  );
 }

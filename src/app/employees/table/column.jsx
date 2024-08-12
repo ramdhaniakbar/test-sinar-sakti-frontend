@@ -2,8 +2,21 @@ import moment from "moment"
 import { useMemo } from "react"
 import { useTable } from "react-table"
 import { EmployeeTableLayout } from "./data-table"
+import { useRouter } from "next/navigation"
 
-const EmployeeTableInstance = ({ tableData = [] }) => {
+const EmployeeTableInstance = ({ tableData = [], deleteEmployee }) => {
+  const router = useRouter()
+
+  const handleChange = (e, id) => {
+    const selectedValue = e.target.value
+
+    if (selectedValue != '/delete') {
+      router.push('/employees' + selectedValue)
+    } else {
+      deleteEmployee(id)
+    }
+  }
+
   const [columns, data] = useMemo(() => {
     const columns = [
       {
@@ -38,12 +51,15 @@ const EmployeeTableInstance = ({ tableData = [] }) => {
         accessor: "foto",
         size: 150,
         Cell: ({ cell }) => {
+          let fotoEmployee = cell.row.original.foto.startsWith("https")
+            ? cell.row.original.foto
+            : "http://localhost:8000/" + cell.row.original.foto
           return (
             <img
-              src={cell.row.original.foto}
+              src={fotoEmployee}
               alt={cell.row.original.nama}
-              width={50}
-              height={50}
+              width={100}
+              height={100}
             />
           )
         },
@@ -53,20 +69,42 @@ const EmployeeTableInstance = ({ tableData = [] }) => {
         accessor: "status",
         size: 150,
         Cell: ({ cell }) => {
+          const status = cell.row.original.status.trim()
+
+          const backgroundColor =
+            status === "tetap"
+              ? "#3751FF"
+              : status === "kontrak"
+              ? "#F1A22B"
+              : "#00FF00"
+
           return (
             <div
-              className={`flex justify-center uppercase px-4 py-2 text-white rounded-full ${
-                cell.row.original.status == "tetap"
-                  ? "bg-[#3751FF]"
-                  : cell.row.original.status == "kontrak"
-                  ? "bg-[#F1A22B]"
-                  : "bg-[#00FF00]"
-              }`}
+              className="flex justify-center px-4 py-2"
+              style={{
+                backgroundColor,
+                textTransform: "uppercase",
+                borderRadius: "50px",
+                color: "#fff",
+              }}
             >
-              {cell.row.original.status}
+              {status}
             </div>
           )
         },
+      },
+      {
+        Header: "Action",
+        minWidth: "100px",
+        Cell: ({ cell }) => (
+          <>
+            <select onChange={(e) => handleChange(e, cell.row.original.id)}>
+              <option value=''>Pilih Action</option>
+              <option value={`/edit/${cell.row.original.id}`}>Edit</option>
+              <option value="/delete">Delete</option>
+            </select>
+          </>
+        ),
       },
     ]
     const validatedData = Array.isArray(tableData) ? tableData : []
@@ -79,9 +117,7 @@ const EmployeeTableInstance = ({ tableData = [] }) => {
     initialState: { hiddenColumns: ["id"] },
   })
 
-  return (
-    <EmployeeTableLayout {...tableInstance} />
-  )
+  return <EmployeeTableLayout {...tableInstance} />
 }
 
 export default EmployeeTableInstance

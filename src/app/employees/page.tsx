@@ -1,10 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowUpWideNarrow, Filter } from "lucide-react"
-import { useEffect, useState } from "react"
-import { Employee, SortEmployee } from "./table/types"
-import { useQuery } from "@tanstack/react-query"
+import { ArrowDownWideNarrow, ArrowUpWideNarrow, Filter } from "lucide-react"
+import { ChangeEvent, useEffect, useState } from "react"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { dataTableInformation } from "@/helpers/generalHelper"
 import EmployeeTableInstance from "./table/column"
@@ -12,10 +11,9 @@ import Image from "next/image"
 import Link from "next/link"
 
 export default function Employees() {
-  const [employeeData, setEmployeeData] = useState<Employee[]>([])
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const [sorting, setSorting] = useState<SortEmployee[]>([])
+  const [sorting, setSorting] = useState<any[]>([])
   const [dataInformation, setDataInformation] = useState({
     from: 0,
     to: 0,
@@ -28,6 +26,7 @@ export default function Employees() {
     error,
     isFetching,
     refetch,
+    isPlaceholderData,
   } = useQuery({
     queryKey: ["employees", page],
     queryFn: async () => {
@@ -48,7 +47,44 @@ export default function Employees() {
     },
   })
 
+  const { mutate } = useMutation({
+    mutationFn: async (id: number) => {
+      return axios.delete(`http://localhost:8000/api/v1/employee?id=${id}`)
+    },
+    onSuccess: () => {
+      refetch()
+    },
+    onError: (error) => {
+      console.log(error)
+    },
+  })
+
+  const handleSortClick = (columnId: string) => {
+    const existingSort = sorting.find((sort) => sort.columnId === columnId)
+    const newDirection = existingSort
+      ? existingSort.direction === "asc"
+        ? "desc"
+        : "asc"
+      : "asc"
+
+    const newSorting = sorting.filter((sort) => sort.columnId !== columnId)
+    newSorting.push({ columnId, direction: newDirection })
+    setSorting(newSorting)
+  }
+
+  const handleLimitChange = (e: ChangeEvent<any>) => {
+    const newLimit = parseInt(e.target.value)
+    setLimit(newLimit)
+    setPage(1)
+  }
+
+  const handleDelete = (id: number) => {
+    mutate(id)
+  }
+
   useEffect(() => {
+    refetch()
+
     if (employeeResponse?.data?.data?.pagination) {
       const displayData = dataTableInformation(
         page,
@@ -75,10 +111,18 @@ export default function Employees() {
           <div className="flex justify-between">
             <h2 className="text-xl font-medium">Data Karyawan</h2>
             <div className="flex gap-4">
-              <div className="flex items-end gap-1">
-                <ArrowUpWideNarrow color="#C6C7CD" />
+              <div
+                className="flex items-end gap-1 cursor-pointer"
+                onClick={() => handleSortClick("nama")}
+              >
+                {sorting.length > 0 && sorting[0].direction == "asc" ? (
+                  <ArrowUpWideNarrow color="#C6C7CD" />
+                ) : (
+                  <ArrowDownWideNarrow color="#C6C7CD" />
+                )}
                 <span>Sort</span>
               </div>
+
               <div className="flex items-end gap-1">
                 <Filter color="#C6C7CD" />
                 <span>Filter</span>
@@ -88,7 +132,7 @@ export default function Employees() {
 
           <div className="flex flex-col gap-2 md:flex-row justify-between mt-12">
             <div className="flex gap-4">
-              <Link href={'/employees/create'}>
+              <Link href={"/employees/create"}>
                 <Button>Tambah Karyawan</Button>
               </Link>
               <Button>Import CSV</Button>
@@ -100,14 +144,21 @@ export default function Employees() {
           </div>
 
           <div className="my-12">
-            <EmployeeTableInstance tableData={employeesData} />
+            <EmployeeTableInstance
+              tableData={employeesData}
+              deleteEmployee={handleDelete}
+            />
           </div>
 
           <div className="flex justify-end gap-8">
             <div className="flex">
               <span>Rows per page</span>
-              <select name="" id="">
-                <option value="1">1</option>
+              <select name="" id="" value={limit} onChange={handleLimitChange}>
+                {[5, 10, 25, 50, 100]?.map((pageSize) => (
+                  <option key={pageSize} value={pageSize}>
+                    {pageSize}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -117,18 +168,39 @@ export default function Employees() {
                 {employeeResponse?.data?.data?.pagination?.count_data}
               </span>
               <div className="flex gap-2">
-                <Image
-                  src={`/svgs/arrow_left.svg`}
-                  alt="arrow left"
-                  width={20}
-                  height={20}
-                />
-                <Image
-                  src={`/svgs/arrow_right.svg`}
-                  alt="arrow right"
-                  width={20}
-                  height={20}
-                />
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage((old) => Math.max(old - 1, 1))}
+                  className="cursor-pointer"
+                >
+                  <Image
+                    src={`/svgs/arrow_left.svg`}
+                    alt="arrow left"
+                    width={20}
+                    height={20}
+                  />
+                </button>
+                <button
+                  disabled={
+                    isPlaceholderData ||
+                    page ===
+                      employeeResponse?.data?.data?.pagination?.total_page ||
+                    !employeeResponse?.data?.data?.pagination?.count_data
+                  }
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (!isPlaceholderData) {
+                      setPage((old) => old + 1)
+                    }
+                  }}
+                >
+                  <Image
+                    src={`/svgs/arrow_right.svg`}
+                    alt="arrow right"
+                    width={20}
+                    height={20}
+                  />
+                </button>
               </div>
             </div>
           </div>

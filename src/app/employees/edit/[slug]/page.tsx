@@ -1,16 +1,23 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react"
-import { Employee } from "../table/types"
-import { useMutation } from "@tanstack/react-query"
+import { Employee } from "../../table/types"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import axios from "axios"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
+import Image from "next/image"
 
-export default function CreateEmploye() {
+export default function EditEmployee({
+  params,
+}: {
+  params: {
+    slug: string
+  }
+}) {
+  console.log(params)
   const router = useRouter()
   const [formData, setFormData] = useState<Employee | any>({
     nama: "",
@@ -24,10 +31,26 @@ export default function CreateEmploye() {
   const [imagePreview, setImagePreview] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const {
+    isPending: isEmployeePending,
+    data: employeeData,
+    refetch,
+    isError: isEmployeeError,
+    error: errorEmployee,
+  } = useQuery({
+    queryKey: ["employee", params.slug],
+    queryFn: async () => {
+      const employeeResponse = await axios.get(
+        `http://localhost:8000/api/v1/employee/?id=${params.slug}`
+      )
+      return employeeResponse?.data
+    },
+  })
+
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async (data) => {
-      const employeeResponse = await axios.post(
-        "http://localhost:8000/api/v1/employee",
+      const employeeResponse = await axios.put(
+        `http://localhost:8000/api/v1/employee?id=${params.slug}`,
         data,
         {
           headers: {
@@ -35,6 +58,7 @@ export default function CreateEmploye() {
           },
         }
       )
+      console.log(employeeResponse)
       return employeeResponse
     },
     onSuccess: () => {
@@ -59,6 +83,24 @@ export default function CreateEmploye() {
 
     mutate(formData)
   }
+
+  useEffect(() => {
+    if (employeeData?.data) {
+      let fotoEmployee: string = employeeData?.data.foto
+
+      setFormData((prevData: Employee) => ({
+        ...prevData,
+        nama: employeeData?.data.nama,
+        nomor: employeeData?.data.nomor,
+        jabatan: employeeData?.data.jabatan,
+        departemen: employeeData?.data.departemen,
+        foto: fotoEmployee,
+        status: employeeData?.data.status,
+      }))
+
+      setImagePreview("http://localhost:8000/" + fotoEmployee)
+    }
+  }, [employeeData])
 
   useEffect(() => {
     if (isError && error) {
@@ -125,6 +167,7 @@ export default function CreateEmploye() {
                       nama: e.target.value,
                     }))
                   }}
+                  defaultValue={formData.nama}
                 />
                 {errors.nama && (
                   <span className="text-red-500">{errors.nama}</span>
@@ -144,6 +187,7 @@ export default function CreateEmploye() {
                       nomor: e.target.value,
                     }))
                   }}
+                  defaultValue={formData.nomor}
                 />
                 {errors.nomor && (
                   <span className="text-red-500">{errors.nomor}</span>
@@ -308,6 +352,7 @@ export default function CreateEmploye() {
                   />
                   {/* Button that triggers the file input */}
                   <Button
+                    type="button"
                     variant={"secondary"}
                     onClick={() => fileInputRef.current?.click()}
                   >
