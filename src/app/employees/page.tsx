@@ -9,6 +9,19 @@ import { dataTableInformation } from "@/helpers/generalHelper"
 import EmployeeTableInstance from "./table/column"
 import Image from "next/image"
 import Link from "next/link"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import toast from "react-hot-toast"
 
 export default function Employees() {
   const [page, setPage] = useState(1)
@@ -18,6 +31,7 @@ export default function Employees() {
     from: 0,
     to: 0,
   })
+  const [csvFile, setCsvFile] = useState<any>(null)
 
   const {
     isPending,
@@ -58,6 +72,91 @@ export default function Employees() {
       console.log(error)
     },
   })
+
+  const { mutate: importCSV } = useMutation({
+    mutationFn: async (data: any) => {
+      const csvFile = new FormData()
+      csvFile.append("file", data)
+
+      const csvResponse = await axios.post(
+        "http://localhost:8000/api/v1/employee/import-csv",
+        csvFile,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
+      return csvResponse
+    },
+    onSuccess: () => {
+      toast("Berhasil mengimport file CSV")
+      refetch()
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Error an occured")
+      console.log(error.response.data.message)
+    },
+  })
+
+  const { mutate: exportFile } = useMutation({
+    mutationFn: async (data: any) => {
+      const fileResponse = await axios.post(
+        "localhost:8000/api/v1/employee/export-file",
+        { type: data },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
+      return fileResponse
+    },
+    onSuccess: () => {
+      toast("Berhasil mengimport file CSV")
+      refetch()
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || "Error an occured")
+      console.log(error.response.data.message)
+    },
+  })
+
+  const exportFileDownload = async (data: string) => {
+    let type = ""
+    let response_type: any = ''
+
+    if (data == "pdf") {
+      type = "application/pdf"
+      response_type = 'arraybuffer'
+    } else {
+      type = "text/csv"
+      response_type = 'blob'
+    }
+
+    const res = await axios.get(
+      "http://localhost:8000/api/v1/employee/export-file?type=" + data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        responseType: response_type
+      }
+    )
+    const blob = new Blob([res.data], { type: type })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+
+    a.download = "employees." + data
+    document.body.appendChild(a)
+    a.click()
+
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    return
+  }
 
   const handleSortClick = (columnId: string) => {
     const existingSort = sorting.find((sort) => sort.columnId === columnId)
@@ -135,11 +234,46 @@ export default function Employees() {
               <Link href={"/employees/create"}>
                 <Button>Tambah Karyawan</Button>
               </Link>
-              <Button>Import CSV</Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button>Import CSV</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Import Data CSV</AlertDialogTitle>
+                  </AlertDialogHeader>
+                  <AlertDialogDescription>
+                    <Input
+                      type="file"
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCsvFile(e.target.files?.[0] || null)
+                      }}
+                    />
+                  </AlertDialogDescription>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        if (csvFile) {
+                          importCSV(csvFile)
+                        } else {
+                          toast.error("File wajib diisi")
+                        }
+                      }}
+                    >
+                      Import File
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             <div className="flex gap-4">
-              <Button>Ekspor ke CSV</Button>
-              <Button>Ekspor ke PDF</Button>
+              <Button onClick={() => exportFileDownload("csv")}>
+                Ekspor ke CSV
+              </Button>
+              <Button onClick={() => exportFileDownload("pdf")}>
+                Ekspor ke PDF
+              </Button>
             </div>
           </div>
 

@@ -10,8 +10,8 @@ const EmployeeTableInstance = ({ tableData = [], deleteEmployee }) => {
   const handleChange = (e, id) => {
     const selectedValue = e.target.value
 
-    if (selectedValue != '/delete') {
-      router.push('/employees' + selectedValue)
+    if (selectedValue != "/delete") {
+      router.push("/employees" + selectedValue)
     } else {
       deleteEmployee(id)
     }

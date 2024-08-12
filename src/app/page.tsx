@@ -31,16 +31,16 @@ export default function Home() {
           <div className="flex-1 px-6 py-8 bg-[#FFFFFF] mt-16 border rounded-lg h-full shadow-md">
             <div className="flex justify-center items-center">
               <div className="flex-col space-y-10 text-center">
-                <span>Total Kontrak</span>
-                <h1 className="text-4xl font-semibold">{data?.data.data.data_employees.probation_count}</h1>
+                <span className="text-[#3751FF]">Total Kontrak</span>
+                <h1 className="text-4xl font-semibold text-[#3751FF]">{data?.data.data.data_employees.probation_count}</h1>
               </div>
             </div>
           </div>
           <div className="flex-1 px-6 py-8 bg-[#FFFFFF] mt-16 border rounded-lg h-full shadow-md">
             <div className="flex justify-center items-center">
               <div className="flex-col space-y-10 text-center">
-                <span>Total Probation</span>
-                <h1 className="text-4xl font-semibold">{data?.data.data.data_employees.total_count}</h1>
+                <span className="text-[#F1A22B]">Total Probation</span>
+                <h1 className="text-4xl font-semibold text-[#F1A22B]">{data?.data.data.data_employees.total_count}</h1>
               </div>
             </div>
           </div>

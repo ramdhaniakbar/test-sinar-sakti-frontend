@@ -17,7 +17,6 @@ export default function EditEmployee({
     slug: string
   }
 }) {
-  console.log(params)
   const router = useRouter()
   const [formData, setFormData] = useState<Employee | any>({
     nama: "",
@@ -86,7 +85,9 @@ export default function EditEmployee({
 
   useEffect(() => {
     if (employeeData?.data) {
-      let fotoEmployee: string = employeeData?.data.foto
+      let fotoEmployee: string = employeeData?.data.foto.startsWith("https")
+        ? employeeData?.data.foto
+        : "http://localhost:8000/" + employeeData?.data.foto
 
       setFormData((prevData: Employee) => ({
         ...prevData,
@@ -98,7 +99,7 @@ export default function EditEmployee({
         status: employeeData?.data.status,
       }))
 
-      setImagePreview("http://localhost:8000/" + fotoEmployee)
+      setImagePreview(fotoEmployee)
     }
   }, [employeeData])
 
