@@ -110,8 +110,8 @@ export default function CreateEmploye() {
           <h2 className="text-xl font-medium">Form Input Karyawan</h2>
 
           <form onSubmit={handleSubmit} className="w-full flex mt-8">
-            <div className="flex-col flex-1 w-32 space-y-6">
-              <div className="flex-col w-full xl:w-9/12 space-y-2">
+            <div className="flex-col flex-1 space-y-6">
+              <div className="flex-col w-full space-y-2">
                 <label htmlFor="nama" className="text-lg">
                   Nama Karyawan
                 </label>
@@ -130,7 +130,7 @@ export default function CreateEmploye() {
                   <span className="text-red-500">{errors.nama}</span>
                 )}
               </div>
-              <div className="flex-col w-full xl:w-9/12 space-y-2">
+              <div className="flex-col w-full space-y-2">
                 <label htmlFor="nomor" className="text-lg">
                   Nomor Karyawan
                 </label>
@@ -149,7 +149,7 @@ export default function CreateEmploye() {
                   <span className="text-red-500">{errors.nomor}</span>
                 )}
               </div>
-              <div className="flex-col w-full xl:w-9/12 space-y-2">
+              <div className="flex-col w-full space-y-2">
                 <label htmlFor="jabatan" className="text-lg">
                   Jabatan
                 </label>
@@ -217,7 +217,7 @@ export default function CreateEmploye() {
                   <span className="text-red-500">{errors.jabatan}</span>
                 )}
               </div>
-              <div className="flex-col w-full xl:w-9/12 space-y-2">
+              <div className="flex-col w-full space-y-2">
                 <label htmlFor="departemen" className="text-lg">
                   Departemen
                 </label>
@@ -248,7 +248,7 @@ export default function CreateEmploye() {
                   <span className="text-red-500">{errors.departemen}</span>
                 )}
               </div>
-              <div className="flex-col w-full xl:w-9/12 space-y-2">
+              <div className="flex-col w-full space-y-2">
                 <label htmlFor="status" className="text-lg">
                   Status
                 </label>
@@ -278,6 +278,55 @@ export default function CreateEmploye() {
                 )}
               </div>
 
+              <div className="flex-col block md:hidden">
+                <div className="flex-col mb-2">
+                  <span>Photo</span>
+                  <div className="flex items-center gap-4 mt-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      style={{ display: "none" }}
+                      onChange={handleFileChange}
+                    />
+                    {/* Button that triggers the file input */}
+                    <Button
+                      variant={"secondary"}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Select File
+                    </Button>
+
+                    <span className="text-[#868B90]">
+                      {imagePreview ? "File selected" : "No file selected"}
+                    </span>
+                  </div>
+                </div>
+                {errors.foto ? (
+                  <span className="text-red-500">{errors.foto}</span>
+                ) : (
+                  <></>
+                )}
+                {imagePreview ? (
+                  <div>
+                    <img
+                      src={imagePreview as string} // Cast to string as `FileReader.result` can be `string` or `ArrayBuffer`
+                      alt="Preview"
+                      style={{ maxWidth: "100%", maxHeight: "300px" }} // Optional: Adjust styles as needed
+                    />
+                  </div>
+                ) : (
+                  <Image
+                    src={`/images/default_image.png`}
+                    alt="Default Image"
+                    className={`rounded-lg ${
+                      errors.foto ? "border border-red-500" : ""
+                    }`}
+                    width={280}
+                    height={280}
+                  />
+                )}
+              </div>
+
               <div className="flex gap-2 pt-2">
                 {isPending ? (
                   <Button disabled>
@@ -296,7 +345,7 @@ export default function CreateEmploye() {
               </div>
             </div>
 
-            <div className="flex-col flex-2 space-y-6 md:ml-8">
+            <div className="flex-col flex-1 hidden md:block space-y-6 md:ml-8 md:-mr-28">
               <div className="flex-col mb-2">
                 <span>Photo</span>
                 <div className="flex items-center gap-4 mt-2">
@@ -336,7 +385,9 @@ export default function CreateEmploye() {
                 <Image
                   src={`/images/default_image.png`}
                   alt="Default Image"
-                  className="rounded-md"
+                  className={`rounded-lg ${
+                    errors.foto ? "border border-red-500" : ""
+                  }`}
                   width={280}
                   height={280}
                 />

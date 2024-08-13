@@ -323,6 +323,55 @@ export default function EditEmployee({
                 )}
               </div>
 
+              <div className="flex-col block md:hidden">
+                <div className="flex-col mb-2">
+                  <span>Photo</span>
+                  <div className="flex items-center gap-4 mt-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      style={{ display: "none" }}
+                      onChange={handleFileChange}
+                    />
+                    {/* Button that triggers the file input */}
+                    <Button
+                      variant={"secondary"}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Select File
+                    </Button>
+
+                    <span className="text-[#868B90]">
+                      {imagePreview ? "File selected" : "No file selected"}
+                    </span>
+                  </div>
+                </div>
+                {errors.foto ? (
+                  <span className="text-red-500">{errors.foto}</span>
+                ) : (
+                  <></>
+                )}
+                {imagePreview ? (
+                  <div>
+                    <img
+                      src={imagePreview as string} // Cast to string as `FileReader.result` can be `string` or `ArrayBuffer`
+                      alt="Preview"
+                      style={{ maxWidth: "100%", maxHeight: "300px" }} // Optional: Adjust styles as needed
+                    />
+                  </div>
+                ) : (
+                  <Image
+                    src={`/images/default_image.png`}
+                    alt="Default Image"
+                    className={`rounded-lg ${
+                      errors.foto ? "border border-red-500" : ""
+                    }`}
+                    width={280}
+                    height={280}
+                  />
+                )}
+              </div>
+
               <div className="flex gap-2 pt-2">
                 {isPending ? (
                   <Button disabled>
@@ -341,7 +390,7 @@ export default function EditEmployee({
               </div>
             </div>
 
-            <div className="flex-col flex-2 w-96 space-y-6 md:ml-8">
+            <div className="flex-col flex-1 hidden md:block space-y-6 md:ml-8 md:-mr-28">
               <div className="flex-col mb-2">
                 <span>Photo</span>
                 <div className="flex items-center gap-4 mt-2">
@@ -353,7 +402,6 @@ export default function EditEmployee({
                   />
                   {/* Button that triggers the file input */}
                   <Button
-                    type="button"
                     variant={"secondary"}
                     onClick={() => fileInputRef.current?.click()}
                   >
@@ -382,7 +430,9 @@ export default function EditEmployee({
                 <Image
                   src={`/images/default_image.png`}
                   alt="Default Image"
-                  className="rounded-md"
+                  className={`rounded-lg ${
+                    errors.foto ? "border border-red-500" : ""
+                  }`}
                   width={280}
                   height={280}
                 />
