@@ -56,11 +56,7 @@ export default function Employees() {
   const [resetRequested, setResetRequested] = useState(false)
 
   const {
-    isPending,
     data: employeeResponse,
-    isError,
-    error,
-    isFetching,
     refetch,
     isPlaceholderData,
   } = useQuery({
@@ -221,7 +217,7 @@ export default function Employees() {
 
   return (
     <div className="h-full w-full">
-      <div className="py-8 mx-8 lg:ml-80 justify-end">
+      <div className="py-8 mx-8 xl:ml-80 justify-end">
         <h1 className="text-2xl font-semibold">Halaman Karyawan</h1>
 
         <div className="w-100 px-6 py-8 h-fit bg-[#FFFFFF] mt-16 border rounded-lg">

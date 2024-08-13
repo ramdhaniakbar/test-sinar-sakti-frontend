@@ -7,7 +7,7 @@ import { PieChart, Pie, Tooltip, Cell, Legend } from "recharts"
 
 export default function Home() {
   const [formattedData, setFormattedData] = useState<any>([])
-  
+
   const { data } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
@@ -21,7 +21,6 @@ export default function Home() {
   useEffect(() => {
     const departemens: string[] = data?.data?.data?.departemens
 
-    console.log('departemens', departemens)
     if (Array.isArray(departemens)) {
       const departmentCounts = departemens.reduce<Record<string, number>>(
         (acc, dept) => {
@@ -42,7 +41,7 @@ export default function Home() {
 
   return (
     <div className="h-full w-full">
-      <div className="py-8 mx-8 lg:ml-80 justify-end">
+      <div className="py-8 mx-8 xl:ml-80 justify-end">
         <h1 className="text-2xl font-semibold">Halaman Dashboard</h1>
 
         <div className="flex flex-col md:flex-row gap-2 md:gap-12 lg:gap-20 mb-12">
@@ -51,7 +50,7 @@ export default function Home() {
               <div className="flex-col space-y-10 text-center">
                 <span>Total Karyawan</span>
                 <h1 className="text-4xl font-semibold">
-                  {data?.data.data.data_employees.kontrak_count}
+                  {data?.data.data.data_employees.total_count}
                 </h1>
               </div>
             </div>
@@ -61,7 +60,7 @@ export default function Home() {
               <div className="flex-col space-y-10 text-center">
                 <span className="text-[#3751FF]">Total Kontrak</span>
                 <h1 className="text-4xl font-semibold text-[#3751FF]">
-                  {data?.data.data.data_employees.probation_count}
+                  {data?.data.data.data_employees.kontrak_count}
                 </h1>
               </div>
             </div>
@@ -71,7 +70,7 @@ export default function Home() {
               <div className="flex-col space-y-10 text-center">
                 <span className="text-[#F1A22B]">Total Probation</span>
                 <h1 className="text-4xl font-semibold text-[#F1A22B]">
-                  {data?.data.data.data_employees.total_count}
+                  {data?.data.data.data_employees.probation_count}
                 </h1>
               </div>
             </div>

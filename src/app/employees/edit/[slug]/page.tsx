@@ -146,7 +146,7 @@ export default function EditEmployee({
 
   return (
     <div className="h-full w-full">
-      <div className="py-8 mx-8 lg:ml-80 justify-end">
+      <div className="py-8 mx-8 xl:ml-80 justify-end">
         <h1 className="text-2xl font-semibold">Tambah Karyawan</h1>
 
         <div className="w-100 px-6 py-8 h-full bg-[#FFFFFF] mt-16 border rounded-lg">
